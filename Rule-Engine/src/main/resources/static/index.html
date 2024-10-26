@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Engine UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: auto;
+            padding-top: 50px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Rule Engine Evaluation</h2>
+    
+    <label for="ruleString">Rule String</label>
+    <input type="text" id="ruleString" placeholder='e.g., "age > 18 AND department = \"Engineering\""'>
+    
+    <label for="userData">User Data (JSON format)</label>
+    <textarea id="userData" rows="5" placeholder='e.g., {"age": 25, "department": "Engineering"}'></textarea>
+    
+    <button onclick="evaluateRule()">Evaluate Rule</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function evaluateRule() {
+            const ruleString = document.getElementById("ruleString").value;
+            const userDataText = document.getElementById("userData").value;
+            let userData;
+
+            try {
+                userData = JSON.parse(userDataText);
+            } catch (error) {
+                document.getElementById("result").textContent = "Invalid JSON in User Data.";
+                return;
+            }
+
+            const payload = {
+                ruleString: ruleString,
+                userData: userData
+            };
+
+            try {
+                const response = await fetch("http://localhost:8080/rules/evaluate-rule", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                document.getElementById("result").textContent = `Evaluation Result: ${result ? "True" : "False"}`;
+            } catch (error) {
+                document.getElementById("result").textContent = "Error occurred while evaluating rule.";
+                console.error("Evaluation error:", error);
+            }
+        }
+    </script>
+</body>
+</html>
